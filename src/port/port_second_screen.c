@@ -812,15 +812,17 @@ static void DrawMenuButton(const SSurf* s, float x0, float y0, float x1, float y
     if (bts > ts)
         bts = ts;
 
-    if (!Port_SecondScreenTheme_DrawMenuButton(s->px, s->w, s->h, s->stride, (int32_t)x0, (int32_t)y0,
-                                               (int32_t)(x1 - x0), (int32_t)(y1 - y0), label, pressed)) {
+    int themed = Port_SecondScreenTheme_DrawMenuButton(s->px, s->w, s->h, s->stride, (int32_t)x0, (int32_t)y0,
+                                                       (int32_t)(x1 - x0), (int32_t)(y1 - y0), label, pressed);
+    if (!themed)
         DrawButtonPlateFallback(s, x0, y0, x1, y1, pressed, bts);
-        if (label != NULL && label[0] != '\0') {
-            int32_t ms = (int32_t)(1.8f * u);
-            if (ms < 1)
-                ms = 1;
-            MenuTextCentered(s, label, (x0 + x1) / 2.0f, (y0 + y1) / 2.0f, ms, SS_TEXT_NAVY);
-        }
+    /* The JP ROM has no latin banner face, so a themed plate comes back
+     * unlettered there; letter it with the 5x7 stand-in instead. */
+    if (label != NULL && label[0] != '\0' && (!themed || Port_SecondScreenTheme_BigTextWidth(label, 1) == 0)) {
+        int32_t ms = (int32_t)(1.8f * u);
+        if (ms < 1)
+            ms = 1;
+        MenuTextCentered(s, label, (x0 + x1) / 2.0f, (y0 + y1) / 2.0f, ms, SS_TEXT_NAVY);
     }
     if (accent) {
         StrokeRoundRect(s, x0 + 2 * bts, y0 + 2 * bts, x1 - 2 * bts, y1 - 2 * bts, 4.0f * bts, (float)bts,

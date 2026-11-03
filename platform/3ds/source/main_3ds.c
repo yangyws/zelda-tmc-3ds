@@ -42,7 +42,8 @@ static int RomIsSupported(const char* path) {
     if (!file)
         return 0;
     int ok = fseek(file, 0xAC, SEEK_SET) == 0 && fread(gameCode, 1, sizeof(gameCode), file) == sizeof(gameCode) &&
-             (memcmp(gameCode, "BZME", sizeof(gameCode)) == 0 || memcmp(gameCode, "BZMP", sizeof(gameCode)) == 0);
+             (memcmp(gameCode, "BZME", sizeof(gameCode)) == 0 || memcmp(gameCode, "BZMP", sizeof(gameCode)) == 0 ||
+              memcmp(gameCode, "BZMJ", sizeof(gameCode)) == 0);
     fclose(file);
     return ok;
 }
@@ -103,15 +104,17 @@ int main(int argc, char** argv) {
         if (romResult < 0) {
             snprintf(message, sizeof(message),
                      "None of the .gba files in:\n%s\n"
-                     "is a supported USA (BZME) or Europe (BZMP) ROM.\n\n"
+                     "is a supported USA (BZME), Europe\n(BZMP) or Japan (BZMJ) ROM.\n\n"
                      "Expected SHA-1:\nUSA: b4bd50e4131b027c334547b4524e2dbbd4227130\n"
-                     "Europe: cff199b36ff173fb6faf152653d1bccf87c26fb7",
+                     "Europe: cff199b36ff173fb6faf152653d1bccf87c26fb7\n"
+                     "Japan: 6c5404a1effb17f481f352181d0f1c61a2765c5d",
                      APP_DIR);
         } else {
             snprintf(message, sizeof(message),
-                     "Copy your clean USA or Europe ROM to:\n%s\n\nAny .gba filename is accepted.\n\n"
+                     "Copy your clean USA, Europe or Japan\nROM to:\n%s\n\nAny .gba filename is accepted.\n\n"
                      "Expected SHA-1:\nUSA: b4bd50e4131b027c334547b4524e2dbbd4227130\n"
-                     "Europe: cff199b36ff173fb6faf152653d1bccf87c26fb7",
+                     "Europe: cff199b36ff173fb6faf152653d1bccf87c26fb7\n"
+                     "Japan: 6c5404a1effb17f481f352181d0f1c61a2765c5d",
                      APP_DIR);
         }
         Platform3DS_ShowFatal(romResult < 0 ? "Unsupported ROM" : "ROM not found", message);

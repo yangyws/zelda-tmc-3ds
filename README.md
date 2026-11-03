@@ -1,3 +1,5 @@
+**English** | [台灣繁體中文](README.zh-TW.md)
+
 <h1 align="center">The Minish Cap 3DS</h1>
 
 <p align="center">

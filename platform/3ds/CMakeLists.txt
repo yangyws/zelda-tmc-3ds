@@ -180,6 +180,7 @@ configure_file("${TMC_ROOT}/docs/legal/COPYRIGHT.md" "${TMC_ROMFS}/licenses/COPY
 configure_file("${TMC_ROOT}/docs/legal/THIRD-PARTY-LICENSES.md" "${TMC_ROMFS}/licenses/THIRD-PARTY-LICENSES.md" COPYONLY)
 configure_file("${TMC_ROOT}/src/third_party/agbplay_core/LICENSE" "${TMC_ROMFS}/licenses/agbplay-NOTICE.txt" COPYONLY)
 configure_file("${TMC_ROOT}/src/third_party/agbplay_core/COPYING.LESSER" "${TMC_ROMFS}/licenses/LGPL-3.0.txt" COPYONLY)
+configure_file("${TMC_ROOT}/docs/legal/Cubic-11-OFL.txt" "${TMC_ROMFS}/licenses/Cubic-11-OFL.txt" COPYONLY)
 configure_file("${CMAKE_CURRENT_LIST_DIR}/romfs/update-ca.pem" "${TMC_ROMFS}/update-ca.pem" COPYONLY)
 configure_file(
     "${CMAKE_CURRENT_LIST_DIR}/romfs/splash.rgb565"

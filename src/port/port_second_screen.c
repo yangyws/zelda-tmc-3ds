@@ -201,6 +201,7 @@ enum {
 #ifdef TMC_3DS
     SS_SET_ASPECT_RATIO,
     SS_SET_DISPLAY_STYLE,
+    SS_SET_UI_LANGUAGE, /* ui_language: panel labels in zh-TW or English */
 #endif
     SS_SET_COUNT
 };
@@ -634,6 +635,9 @@ static int32_t TextWidthPx(const char* str, int32_t scale) {
     return (int32_t)strlen(str) * 6 * scale - scale;
 }
 
+/* zh-TW translations of the labels below and their 12 px glyph subset. */
+#include "port_ui_zh.inc"
+
 /* ------------------------------------------------------------------ */
 /*  Menu text (the game's stylized banner font)                        */
 /* ------------------------------------------------------------------ */
@@ -653,6 +657,10 @@ static int32_t FallbackScale5x7(int32_t ms) {
 }
 
 static int32_t MenuTextWidth(const char* str, int32_t ms) {
+    str = UiZhText(str);
+    if (UiZhIsWide(str)) {
+        return UiZhTextWidth(str, ms);
+    }
     int32_t w = Port_SecondScreenTheme_BigTextWidth(str, ms);
     if (w == 0 && str != NULL && *str != '\0') {
         w = TextWidthPx(str, FallbackScale5x7(ms));
@@ -662,16 +670,22 @@ static int32_t MenuTextWidth(const char* str, int32_t ms) {
 
 /* yTop is the glyph-box top. Returns the advance. */
 static int32_t MenuTextDraw(const SSurf* s, const char* str, int32_t x, int32_t yTop, int32_t ms, int style) {
+    /* Stand-in faces (pre-ROM 5x7, zh-TW) in the matching palette role. */
+    static const int kColorId[SS_TEXT_STYLE_COUNT] = { SSC_MENU_INK, SSC_MENU_WHITE, SSC_MENU_RED, SSC_RUPEE_GREEN,
+                                                       SSC_BANNER_NAVY };
+    int darkInk = style == SS_TEXT_INK || style == SS_TEXT_NAVY;
+    uint32_t color =
+        Port_SecondScreenTheme_Color(kColorId[style >= 0 && style < SS_TEXT_STYLE_COUNT ? style : SS_TEXT_INK]);
+    uint32_t outline = Port_SecondScreenTheme_Color(darkInk ? SSC_MENU_CREAM : SSC_MENU_BLACK);
+
+    str = UiZhText(str);
+    if (UiZhIsWide(str)) {
+        /* The 12 px em sits two rows into the 16-row banner box, so its
+         * ink centers where the banner face's caps would. */
+        return UiZhDrawText(s, str, x, yTop + 2 * ms, ms, color, !darkInk, outline);
+    }
     int32_t adv = Port_SecondScreenTheme_DrawBigText(s->px, s->w, s->h, s->stride, x, yTop, ms, style, str);
     if (adv == 0 && str != NULL && *str != '\0') {
-        /* Pre-ROM stand-in in the matching palette role. */
-        static const int kColorId[SS_TEXT_STYLE_COUNT] = { SSC_MENU_INK, SSC_MENU_WHITE, SSC_MENU_RED, SSC_RUPEE_GREEN,
-                                                           SSC_BANNER_NAVY };
-        uint32_t color =
-            Port_SecondScreenTheme_Color(kColorId[style >= 0 && style < SS_TEXT_STYLE_COUNT ? style : SS_TEXT_INK]);
-        uint32_t outline = (style == SS_TEXT_INK || style == SS_TEXT_NAVY)
-                               ? Port_SecondScreenTheme_Color(SSC_MENU_CREAM)
-                               : Port_SecondScreenTheme_Color(SSC_MENU_BLACK);
         adv = DrawTextStr(s, str, x, yTop + 3 * ms, FallbackScale5x7(ms), color, outline);
     }
     return adv;
@@ -812,15 +826,20 @@ static void DrawMenuButton(const SSurf* s, float x0, float y0, float x1, float y
     if (bts > ts)
         bts = ts;
 
-    if (!Port_SecondScreenTheme_DrawMenuButton(s->px, s->w, s->h, s->stride, (int32_t)x0, (int32_t)y0,
-                                               (int32_t)(x1 - x0), (int32_t)(y1 - y0), label, pressed)) {
+    const char* text = UiZhText(label);
+    int wide = UiZhIsWide(text);
+    int themed =
+        Port_SecondScreenTheme_DrawMenuButton(s->px, s->w, s->h, s->stride, (int32_t)x0, (int32_t)y0,
+                                              (int32_t)(x1 - x0), (int32_t)(y1 - y0), wide ? "" : text, pressed);
+    if (!themed)
         DrawButtonPlateFallback(s, x0, y0, x1, y1, pressed, bts);
-        if (label != NULL && label[0] != '\0') {
-            int32_t ms = (int32_t)(1.8f * u);
-            if (ms < 1)
-                ms = 1;
-            MenuTextCentered(s, label, (x0 + x1) / 2.0f, (y0 + y1) / 2.0f, ms, SS_TEXT_NAVY);
-        }
+    /* The themed plate letters only in the ROM's banner face: zh-TW labels,
+     * and any label on a ROM without a latin face (JP), are lettered here. */
+    if (text != NULL && text[0] != '\0' && (!themed || wide || Port_SecondScreenTheme_BigTextWidth(text, 1) == 0)) {
+        int32_t ms = (int32_t)(1.8f * u);
+        if (ms < 1)
+            ms = 1;
+        MenuTextCentered(s, text, (x0 + x1) / 2.0f, (y0 + y1) / 2.0f, ms, SS_TEXT_NAVY);
     }
     if (accent) {
         StrokeRoundRect(s, x0 + 2 * bts, y0 + 2 * bts, x1 - 2 * bts, y1 - 2 * bts, 4.0f * bts, (float)bts,
@@ -1891,7 +1910,7 @@ static const char* const kSettingLabels[SS_SET_COUNT] = {
     "MASTER VOLUME",  "AUTOSAVE",      "COLOR CORRECTION", "SHOW FPS",       "HOLD TO ADVANCE TEXT", "RANDOMIZER",
     "PANEL BACKDROP", "SWAP SCREENS",
 #ifdef TMC_3DS
-    "ASPECT RATIO",   "DISPLAY STYLE",
+    "ASPECT RATIO",   "DISPLAY STYLE", "LANGUAGE",
 #endif
 };
 
@@ -1925,6 +1944,8 @@ static const char* SettingValueMinWord(int setting) {
             return "ORIGINAL";
         case SS_SET_DISPLAY_STYLE:
             return "PIXEL PERFECT";
+        case SS_SET_UI_LANGUAGE:
+            return "ENGLISH";
 #endif
         default:
             return "OFF";
@@ -1945,6 +1966,7 @@ static int SettingsPageRows(int page, uint8_t* out) {
     int n = 0;
     if (page == SS_SETTINGS_SCREEN) {
 #ifdef TMC_3DS
+        out[n++] = SS_SET_UI_LANGUAGE;
         out[n++] = SS_SET_ASPECT_RATIO;
         out[n++] = SS_SET_DISPLAY_STYLE;
         out[n++] = SS_SET_TOP_HUD;
@@ -2229,6 +2251,10 @@ static int GetSettingState(int row, char* out, int outCap) {
         case SS_SET_DISPLAY_STYLE:
             snprintf(out, (size_t)outCap, "%s", Port_Config_Get3DSDisplayStyleName());
             return Port_Config_Get3DSDisplayStyle() != PORT_3DS_DISPLAY_BILINEAR;
+        case SS_SET_UI_LANGUAGE:
+            /* CHINESE reads as 中文 through the label table. */
+            snprintf(out, (size_t)outCap, "%s", Port_Config_GetUiChinese() ? "CHINESE" : "ENGLISH");
+            return 1;
 #endif
     }
     if (row != SS_SET_TOP_HUD) {
@@ -3338,6 +3364,9 @@ void Port_SecondScreen_OnTap(int x, int y, int longPress) {
                     break;
                 case SS_SET_DISPLAY_STYLE:
                     Port_Config_Cycle3DSDisplayStyle();
+                    break;
+                case SS_SET_UI_LANGUAGE:
+                    Port_Config_SetUiChinese(!Port_Config_GetUiChinese());
                     break;
 #endif
                 case SS_SET_FOLLOW:

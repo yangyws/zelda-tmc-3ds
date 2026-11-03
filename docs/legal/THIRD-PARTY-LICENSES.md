@@ -37,6 +37,12 @@ reproduced/redistributed here under their respective licenses.
 | SDL3 | https://github.com/libsdl-org/SDL | Zlib |
 | zlib | https://zlib.net | Zlib |
 | libpng | http://www.libpng.org/pub/png/libpng.html | libpng (PNG Reference Library) |
+| Cubic 11 (俐方體11號) | https://github.com/ACh-K/Cubic-11 | SIL OFL 1.1 ([Cubic-11-OFL.txt](Cubic-11-OFL.txt)) |
+
+The bottom screen's Traditional Chinese labels use a 12 px glyph subset of
+Cubic 11, embedded as `src/port/port_ui_zh_font_generated.inc` by
+`tools/generate_ui_zh_font.py`. That subset is a Modified Version of the
+font and remains under the SIL Open Font License 1.1.
 
 ## Retired upstream build tools
 

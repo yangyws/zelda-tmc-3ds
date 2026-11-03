@@ -17,6 +17,7 @@ static _Atomic bool sCrests = true;
 static _Atomic bool sFloorReturn = true;
 static _Atomic bool sHideHud;
 static _Atomic bool sHoldText;
+static _Atomic bool sUiChinese = true;
 static _Atomic bool sColorCorrection;
 static _Atomic bool sAutosave;
 static bool sConsoleParity;
@@ -156,6 +157,7 @@ static void SaveConfig(void) {
     fprintf(file, "floor_auto_return=%u\n", sFloorReturn ? 1u : 0u);
     fprintf(file, "hide_top_hud=%u\n", sHideHud ? 1u : 0u);
     fprintf(file, "hold_to_advance_text=%u\n", sHoldText ? 1u : 0u);
+    fprintf(file, "ui_language=%s\n", sUiChinese ? "zh-TW" : "en");
     fprintf(file, "color_correction=%u\n", sColorCorrection ? 1u : 0u);
     fprintf(file, "autosave=%u\n", sAutosave ? 1u : 0u);
     fprintf(file, "widescreen=%u\n", sAspectRatio == PORT_3DS_ASPECT_WIDE ? 1u : 0u);
@@ -287,6 +289,8 @@ void Port_Config_Load(const char* path) {
                 sHideHud = ParseBool(value);
             else if (strcmp(key, "hold_to_advance_text") == 0)
                 sHoldText = ParseBool(value);
+            else if (strcmp(key, "ui_language") == 0)
+                sUiChinese = strcmp(value, "en") != 0;
             else if (strcmp(key, "color_correction") == 0)
                 sColorCorrection = ParseBool(value);
             else if (strcmp(key, "autosave") == 0)
@@ -670,6 +674,13 @@ bool Port_Config_GetHoldToAdvanceText(void) {
 }
 void Port_Config_SetHoldToAdvanceText(bool on) {
     sHoldText = on;
+    SaveConfig();
+}
+bool Port_Config_GetUiChinese(void) {
+    return sUiChinese;
+}
+void Port_Config_SetUiChinese(bool on) {
+    sUiChinese = on;
     SaveConfig();
 }
 float Port_Config_GetMasterVolume(void) {

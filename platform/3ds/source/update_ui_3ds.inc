@@ -25,7 +25,11 @@ static void UpdateSmallText(const SSurf* s, const char* text, int x, int y, int 
     snprintf(label, sizeof(label), "%s", text);
     for (char* c = label; *c; ++c)
         *c = (char)toupper((unsigned char)*c);
-    text = label;
+    text = UiZhText(label);
+    if (UiZhIsWide(text)) {
+        MenuTextDraw(s, text, x, y, 1, style);
+        return;
+    }
     if (!Port_SecondScreenTheme_DrawBigText(s->px, s->w, s->h, s->stride, x, y, 1, style, text))
         DrawTextStr(s, text, x, y + 4, 1, Port_SecondScreenTheme_Color(SSC_MENU_INK), 0);
 }
@@ -35,7 +39,9 @@ static int UpdateTextWidth(const char* text) {
     snprintf(label, sizeof(label), "%s", text);
     for (char* c = label; *c; ++c)
         *c = (char)toupper((unsigned char)*c);
-    text = label;
+    text = UiZhText(label);
+    if (UiZhIsWide(text))
+        return UiZhTextWidth(text, 1);
     int w = Port_SecondScreenTheme_BigTextWidth(text, 1);
     return w ? w : TextWidthPx(text, 1);
 }

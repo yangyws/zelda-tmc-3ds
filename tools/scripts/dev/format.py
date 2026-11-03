@@ -10,7 +10,7 @@ ROOT = pathlib.Path(__file__).resolve().parents[3]
 GENERATED = {
     'src/port/data_const_stubs.c', 'src/port/data_stubs_autogen.c', 'src/port/stubs_autogen.c',
     'src/port/port_rom_tables.c', 'src/port/flag_remap_generated.c', 'src/port/flag_remap_generated.h',
-    'src/port/generated_sounds_embed.cpp',
+    'src/port/generated_sounds_embed.cpp', 'src/port/port_ui_zh_font_generated.inc',
 }
 # This retained regression input uses the engine's assembly script language,
 # not C/C++; keep its original producer syntax and indentation.

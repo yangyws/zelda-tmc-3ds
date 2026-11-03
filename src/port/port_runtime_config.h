@@ -319,6 +319,9 @@ bool Port_Config_GetMenuHintSeen(void);
 void Port_Config_SetMenuHintSeen(bool seen);
 bool Port_Config_GetHoldToAdvanceText(void);
 void Port_Config_SetHoldToAdvanceText(bool on);
+/* 3DS only: bottom-screen labels in zh-TW (default) or English. */
+bool Port_Config_GetUiChinese(void);
+void Port_Config_SetUiChinese(bool on);
 bool Port_Config_GetRollAttackMacroEnabled(void);
 void Port_Config_SetRollAttackMacroEnabled(bool on);
 float Port_Config_GetMasterVolume(void);
